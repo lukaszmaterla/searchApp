@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .center-block {
+            float: none;
+        }
+
+        #status {
+            font-weight: bold;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        #badoo{
+            margin-top: 20px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container text-center">
+    <h1>Wyszykiwarka użytkowników baddoo po imionach</h1>
+    <hr>
+    <div class="row">
+        <div class="col-sm-4 center-block">
+
+            <form id="badooSearch" action="" method="post">
+
+                <div class="form-group">
+                    <label for="names">Imię lub imiona odzdielone przecinkami!</label>
+                    <input type="text" class="form-control" name="names" id="names" placeholder="np.Anna" value=""
+                           required>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label for="ageFrom">Wiek od</label>
+                            <input type="number" class="form-control" name="ageFrom" id="ageFrom" min="18" max="80"
+                                   value="18">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="ageTo">Wiek do</label>
+                            <input type="number" class="form-control" name="ageTo" id="ageTo" min="18" max="80"
+                                   value="80">
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Szukaj</button>
+
+            </form>
+
+        </div>
+    </div>
+    <hr>
+    <div id="badoo" class="img"></div>
+    <div id="status"></div>
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+    $(function () {
+        var pageNumber = 1;
+        var stop = false;
+
+        var names;
+        var ageFrom;
+        var ageTo;
+        var age;
+        $("#badooSearch").on('submit', function (e) {
+
+            e.preventDefault();
+            $('#badoo').empty();
+            names = $('#names').val();
+            ageFrom = $('#ageFrom').val();
+            ageTo = $('#ageTo').val();
+            age = ageFrom + '-' + ageTo;
+
+            startSearch();
+        });
+
+        function startSearch() {
+            $("#status").html('<div class="alert alert-danger">Trwa wyszukiwanie...</div>');
+
+            $.ajax({
+                url: "ajax.php?pageNumber=" + pageNumber + "&names=" + names + "&age=" + age,
+                success: function (data) {
+
+                    console.log(data);
+
+                    if (data.error == 'koniec wyszukiwania') {
+                        stop = true;
+
+                    } else {
+                        $(data).each(function () {
+                            var person = $(this)[0];
+                            var personHtml =  '<a href="'+person.href+'"><img src="'+person.src+'"></a>';
+                            $("#badoo").append(personHtml);
+                        });
+                    }
+                    pageNumber++;
+                }
+            });
+        }
+        $(document).ajaxStop(function () {
+            if (!stop) {
+                startSearch();
+            }else {
+                $("#status").html('<div class="alert alert-success">Wyszykiwanie zakończone</div>');
+            }
+        });
+
+    });
+
+
+</script>
+</body>
+</html>
